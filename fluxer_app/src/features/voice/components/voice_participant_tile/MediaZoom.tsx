@@ -88,13 +88,12 @@ export function MediaZoom({children}: {children: React.ReactNode}) {
 				force();
 			}}
 			onPointerUp={() => {
-				dragRef.current = null;
 			}}
 			onClickCapture={(e) => {
 				if (dragRef.current?.moved) {
 					e.stopPropagation();
-					dragRef.current = null;
 				}
+				dragRef.current = null;
 			}}
 			data-flx="voice.voice-participant-tile.media-zoom"
 		>
