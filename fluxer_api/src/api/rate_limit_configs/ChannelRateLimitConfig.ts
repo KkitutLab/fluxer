@@ -34,7 +34,7 @@ export const ChannelRateLimitConfigs = {
 	} as RouteRateLimitConfig,
 	CHANNEL_MESSAGE_CREATE: {
 		bucket: 'channel:message:create::channel_id',
-		config: {limit: 20, windowMs: ms('10 seconds')},
+		config: {limit: 80, windowMs: ms('10 seconds')},
 	} as RouteRateLimitConfig,
 	CHANNEL_MESSAGE_UPDATE: {
 		bucket: 'channel:message:update::channel_id',
