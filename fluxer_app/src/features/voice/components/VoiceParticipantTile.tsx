@@ -1048,7 +1048,7 @@ const VoiceParticipantTileInner = observer(function VoiceParticipantTileInner({
 					role={isInsideTilePopout ? undefined : 'button'}
 					tabIndex={isInsideTilePopout ? undefined : 0}
 				>
-					{isScreenShare && hasVideo ? <MediaZoom>{mediaNode}</MediaZoom> : mediaNode}
+					{isScreenShare ? <MediaZoom>{mediaNode}</MediaZoom> : mediaNode}
 					{isScreenShareBuffering &&
 						!isFocusedPlaceholderTile &&
 						screenShareBufferingPresentation === 'last-frame' &&
