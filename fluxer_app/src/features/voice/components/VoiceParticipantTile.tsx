@@ -64,6 +64,7 @@ import {
 } from '@app/features/voice/components/VoiceParticipantTileStateMachine';
 import {useVoiceTileGroup} from '@app/features/voice/components/VoiceTileGroupContext';
 import {FocusedCameraPlaceholder} from '@app/features/voice/components/voice_participant_tile/FocusedCameraPlaceholder';
+import {MediaZoom} from '@app/features/voice/components/voice_participant_tile/MediaZoom';
 import {
 	useAutoVideoSubscription,
 	useEffectiveTrackRef,
@@ -1047,7 +1048,7 @@ const VoiceParticipantTileInner = observer(function VoiceParticipantTileInner({
 					role={isInsideTilePopout ? undefined : 'button'}
 					tabIndex={isInsideTilePopout ? undefined : 0}
 				>
-					{mediaNode}
+					{isScreenShare && hasVideo ? <MediaZoom>{mediaNode}</MediaZoom> : mediaNode}
 					{isScreenShareBuffering &&
 						!isFocusedPlaceholderTile &&
 						screenShareBufferingPresentation === 'last-frame' &&
