@@ -884,9 +884,9 @@ export class GuildMemberOperationsService {
 			auditLogReason,
 		} = params;
 		if (data.mute !== undefined || data.deaf !== undefined || data.channel_id !== undefined) {
-			if (userId !== targetId) {
-				await checkTargetMember(targetId);
-			}
+			// NOTE(custom): voice moderation (mute/deafen/move) is mutual between equals.
+			// Rank hierarchy intentionally not checked here; MUTE_MEMBERS/DEAFEN_MEMBERS/MOVE_MEMBERS
+			// permissions below still apply.
 			if (data.mute !== undefined) {
 				if (!(await hasPermission(Permissions.MUTE_MEMBERS))) {
 					throw new MissingPermissionsError();
