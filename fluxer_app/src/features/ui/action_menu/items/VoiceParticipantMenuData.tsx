@@ -4,6 +4,8 @@ import {showVoiceMemberModerationFailedModal} from '@app/features/app/components
 import {UserSettingsModal} from '@app/features/app/components/dialogs/LoadableSettingsModals';
 import RuntimeConfig from '@app/features/app/state/RuntimeConfig';
 import Authentication from '@app/features/auth/state/Authentication';
+import Guilds from '@app/features/guild/state/Guilds';
+import * as PermissionUtils from '@app/features/permissions/utils/PermissionUtils';
 import Channels from '@app/features/channel/state/Channels';
 import * as VoiceStateCommands from '@app/features/devtools/commands/VoiceStateCommands';
 import {RecordDebugModal, USER_RECORD_DESCRIPTOR} from '@app/features/devtools/components/debug/RecordDebugModal';
@@ -253,6 +255,21 @@ export function useVoiceParticipantMenuData(options: VoiceParticipantMenuDataOpt
 		canTimeout: canTimeoutTarget,
 		canManageTarget,
 	} = useGuildMemberModerationCapabilities(guildId, user, isCurrentUser);
+	// Voice moderation (mute/deafen/move/disconnect) is mutual: allowed when
+	// the target can be managed normally, or ranks are equal.
+	const canVoiceModerateTarget = useMemo(() => {
+		const g = guildId ? Guilds.getGuild(guildId) : null;
+		const me = Authentication.currentUserId;
+		return (targetId: string): boolean => {
+			if (canManageTarget(targetId)) return true;
+			if (!g || !me || targetId === me) return false;
+			if (g.owner_id === targetId) return false;
+			const mine = PermissionUtils.getHighestRole(g.toJSON(), me);
+			const theirs = PermissionUtils.getHighestRole(g.toJSON(), targetId);
+			if (mine == null || theirs == null) return false;
+			return mine.position >= theirs.position;
+		};
+	}, [guildId, canManageTarget]);
 	const focusedChannelId = SelectedChannel.currentChannelId;
 	const focusedChannel = focusedChannelId ? Channels.getChannel(focusedChannelId) : null;
 	const isFocusedChannelTextBased = focusedChannel ? TEXT_BASED_CHANNEL_TYPES.has(focusedChannel.type) : false;
@@ -981,7 +998,7 @@ export function useVoiceParticipantMenuData(options: VoiceParticipantMenuDataOpt
 					},
 					danger: true,
 				});
-			} else if (!isCurrentUser && canMoveMembers && canManageTarget(user.id)) {
+			} else if (!isCurrentUser && canMoveMembers && canVoiceModerateTarget(user.id)) {
 				bulkActions.push({
 					icon: (
 						<DisconnectIcon
@@ -1162,7 +1179,7 @@ export function useVoiceParticipantMenuData(options: VoiceParticipantMenuDataOpt
 		}
 		if (guildId && member) {
 			const nextModerationActions: Array<MenuItemType | MenuCheckboxType> = [];
-			if ((canMuteMembers || canDeafenMembers) && (isCurrentUser || canManageTarget(user.id))) {
+			if ((canMuteMembers || canDeafenMembers) && (isCurrentUser || canVoiceModerateTarget(user.id))) {
 				const isGuildMuted = memberMute;
 				const isGuildDeafened = memberDeaf;
 				if (canMuteMembers) {
@@ -1210,7 +1227,7 @@ export function useVoiceParticipantMenuData(options: VoiceParticipantMenuDataOpt
 					});
 				}
 			}
-			if (!isCurrentUser && canMoveMembers && canManageTarget(user.id) && !isParentGroupedItem) {
+			if (!isCurrentUser && canMoveMembers && canVoiceModerateTarget(user.id) && !isParentGroupedItem) {
 				nextModerationActions.push({
 					icon: (
 						<DisconnectIcon
